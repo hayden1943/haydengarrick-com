@@ -7,41 +7,54 @@ const linkedInUrl = socialLinks.find((link) => link.icon === 'linkedin')?.href;
 
 {
   linkedInUrl && (
-    <div
-      id="copy-name-toast"
-      class="pointer-events-none fixed inset-x-0 bottom-6 z-[70] flex justify-center px-6 sm:justify-end"
-      role="status"
-      aria-live="polite"
-      hidden
-    >
-      <div class="copy-toast-panel pointer-events-auto w-full max-w-xs rounded-lg border border-line bg-paper p-4 shadow-[0_10px_28px_-10px_rgba(0,0,0,0.18)] dark:border-line-dark dark:bg-surface-dark dark:shadow-[0_10px_28px_-10px_rgba(0,0,0,0.5)]">
-        <div class="flex items-start justify-between gap-3">
-          <p class="text-[14px] font-semibold text-ink dark:text-ink-dark">Nice.</p>
-          <button
-            type="button"
-            class="copy-toast-close -m-1.5 shrink-0 rounded-full p-1.5 text-faint transition-colors duration-fast hover:bg-surface hover:text-ink dark:text-subtle-dark dark:hover:bg-paper-dark dark:hover:text-ink-dark"
-            aria-label="Dismiss notification"
+    <Fragment>
+      <div
+        id="copy-name-toast"
+        class="pointer-events-none fixed inset-x-0 bottom-6 z-[70] flex justify-center px-6 sm:justify-end"
+        hidden
+      >
+        <div class="copy-toast-panel pointer-events-auto w-full max-w-xs rounded-lg border border-line bg-paper p-4 shadow-[0_10px_28px_-10px_rgba(0,0,0,0.18)] dark:border-line-dark dark:bg-surface-dark dark:shadow-[0_10px_28px_-10px_rgba(0,0,0,0.5)]">
+          <div class="flex items-start justify-between gap-3">
+            <p class="text-[14px] font-semibold text-ink dark:text-ink-dark">Nice.</p>
+            <button
+              type="button"
+              class="copy-toast-close -m-1.5 shrink-0 rounded-full p-1.5 text-faint transition-colors duration-fast hover:bg-surface hover:text-ink dark:text-subtle-dark dark:hover:bg-paper-dark dark:hover:text-ink-dark"
+              aria-label="Dismiss notification"
+            >
+              <Icon name="close" class="h-3 w-3" />
+            </button>
+          </div>
+          <p class="mt-1 text-[13px] leading-relaxed text-subtle dark:text-subtle-dark">
+            Let me save you a search.
+          </p>
+          <a
+            href={linkedInUrl}
+            target="_blank"
+            rel="noreferrer noopener"
+            class="copy-toast-link group mt-3 inline-flex items-center gap-1.5 text-[13px] font-medium text-accent transition-colors duration-fast hover:text-accent-hover dark:text-accent-dark"
           >
-            <Icon name="close" class="h-3 w-3" />
-          </button>
+            Connect on LinkedIn
+            <Icon
+              name="arrow-right"
+              class="h-3 w-3 transition-transform duration-fast ease-standard group-hover:translate-x-1"
+            />
+          </a>
         </div>
-        <p class="mt-1 text-[13px] leading-relaxed text-subtle dark:text-subtle-dark">
-          Let me save you a search.
-        </p>
-        <a
-          href={linkedInUrl}
-          target="_blank"
-          rel="noreferrer noopener"
-          class="copy-toast-link group mt-3 inline-flex items-center gap-1.5 text-[13px] font-medium text-accent transition-colors duration-fast hover:text-accent-hover dark:text-accent-dark"
-        >
-          Connect on LinkedIn
-          <Icon
-            name="arrow-right"
-            class="h-3 w-3 transition-transform duration-fast ease-standard group-hover:translate-x-1"
-          />
-        </a>
       </div>
-    </div>
+
+      {/*
+        A separate, permanently-mounted live region rather than putting
+        aria-live on the toast panel itself. The panel is shown/hidden via
+        the `hidden` attribute, which removes it from the accessibility tree
+        — toggling `hidden` off on an element that's *also* the live region
+        is a known unreliable pattern (some screen reader/browser pairings
+        don't consistently announce a region that was just re-inserted into
+        the tree). Keeping this announcer always mounted and only ever
+        changing its text content is the robust way to guarantee the
+        announcement fires.
+      */}
+      <div id="copy-name-toast-announcer" class="sr-only" role="status" aria-live="polite" aria-atomic="true" />
+    </Fragment>
   )
 }
 
@@ -70,8 +83,14 @@ const linkedInUrl = socialLinks.find((link) => link.icon === 'linkedin')?.href;
   let dismissTimer: number | null = null;
   let globalListenersAttached = false;
 
+  const ANNOUNCEMENT = 'Nice. Let me save you a search. Connect on LinkedIn.';
+
   function getToast() {
     return document.getElementById('copy-name-toast');
+  }
+
+  function getAnnouncer() {
+    return document.getElementById('copy-name-toast-announcer');
   }
 
   function clearTimer() {
@@ -90,6 +109,11 @@ const linkedInUrl = socialLinks.find((link) => link.icon === 'linkedin')?.href;
     toast.classList.add('is-open');
     clearTimer();
     dismissTimer = window.setTimeout(() => closeToast(toast), AUTO_DISMISS_MS);
+    // Setting text on the always-mounted announcer (rather than relying on
+    // the panel's own visibility change) is what reliably triggers the
+    // screen reader announcement — see the comment on the announcer element.
+    const announcer = getAnnouncer();
+    if (announcer) announcer.textContent = ANNOUNCEMENT;
   }
 
   function closeToast(toast: HTMLElement) {
@@ -98,6 +122,8 @@ const linkedInUrl = socialLinks.find((link) => link.icon === 'linkedin')?.href;
     window.setTimeout(() => {
       if (!toast.classList.contains('is-open')) toast.hidden = true;
     }, CLOSE_TRANSITION_MS);
+    const announcer = getAnnouncer();
+    if (announcer) announcer.textContent = '';
   }
 
   function initCopyNameToast() {
