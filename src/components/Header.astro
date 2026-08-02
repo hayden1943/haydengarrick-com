@@ -7,6 +7,7 @@ const navItems = [
 ];
 
 const currentPath = Astro.url.pathname;
+const isHome = currentPath === '/';
 
 function isActive(href: string) {
   if (href.includes('#')) return false;
@@ -18,12 +19,34 @@ function isActive(href: string) {
   class="sticky top-0 z-50 border-b border-line/70 bg-paper/80 backdrop-blur-xl dark:border-line-dark/70 dark:bg-paper-dark/80"
 >
   <div class="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
-    <a
-      href="/"
-      class="text-[13px] font-semibold tracking-tight text-ink transition-opacity hover:opacity-70 dark:text-ink-dark"
-    >
-      Hayden Garrick
-    </a>
+    {isHome ? (
+      <a
+        href="/"
+        aria-label="Hayden Garrick — Home"
+        class="wordmark relative inline-block h-4 shrink-0 overflow-hidden transition-all duration-standard ease-standard hover:opacity-70"
+        style="width: 28px;"
+      >
+        <span
+          class="wordmark-short absolute inset-y-0 left-0 text-[13px] font-semibold whitespace-nowrap text-ink transition-opacity duration-standard ease-standard dark:text-ink-dark"
+          aria-hidden="true"
+        >
+          HG
+        </span>
+        <span
+          class="wordmark-full absolute inset-y-0 left-0 text-[13px] font-semibold whitespace-nowrap tracking-tight text-ink opacity-0 transition-opacity duration-standard ease-standard dark:text-ink-dark"
+          aria-hidden="true"
+        >
+          Hayden Garrick
+        </span>
+      </a>
+    ) : (
+      <a
+        href="/"
+        class="text-[13px] font-semibold tracking-tight text-ink transition-opacity hover:opacity-70 dark:text-ink-dark"
+      >
+        Hayden Garrick
+      </a>
+    )}
 
     <nav aria-label="Primary" class="hidden md:block">
       <ul class="flex items-center gap-8">
@@ -114,6 +137,44 @@ function isActive(href: string) {
     });
   }
 
+  // On the homepage, the header wordmark starts as "HG" and flows into the full
+  // name once the big hero name has scrolled past behind the sticky header.
+  function initWordmark() {
+    const wrap = document.querySelector<HTMLAnchorElement>('.wordmark');
+    const shortEl = wrap?.querySelector<HTMLElement>('.wordmark-short');
+    const fullEl = wrap?.querySelector<HTMLElement>('.wordmark-full');
+    const hero = document.getElementById('hero-name');
+    if (!wrap || !shortEl || !fullEl || !hero) return;
+
+    const shortWidth = shortEl.offsetWidth;
+    const fullWidth = fullEl.offsetWidth;
+
+    function setScrolled(scrolled: boolean) {
+      wrap!.style.width = `${scrolled ? fullWidth : shortWidth}px`;
+      shortEl!.style.opacity = scrolled ? '0' : '1';
+      fullEl!.style.opacity = scrolled ? '1' : '0';
+    }
+
+    wrap.style.width = `${shortWidth}px`;
+
+    const header = document.querySelector('header');
+    const headerHeight = header ? Math.round(header.getBoundingClientRect().height) : 56;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          setScrolled(!entry.isIntersecting);
+        }
+      },
+      { rootMargin: `-${headerHeight}px 0px 0px 0px`, threshold: 0 },
+    );
+    observer.observe(hero);
+  }
+
   initMobileNav();
-  document.addEventListener('astro:page-load', initMobileNav);
+  initWordmark();
+  document.addEventListener('astro:page-load', () => {
+    initMobileNav();
+    initWordmark();
+  });
 </script>
