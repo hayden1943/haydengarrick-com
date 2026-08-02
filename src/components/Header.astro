@@ -2,7 +2,6 @@
 const navItems = [
   { label: 'Podcast', href: '/podcast/' },
   { label: 'Writing', href: '/writing/' },
-  { label: 'Projects', href: '/projects/' },
   { label: 'Contact', href: '/#connect' },
 ];
 
@@ -18,7 +17,7 @@ function isActive(href: string) {
 <header
   class="sticky top-0 z-50 border-b border-line/70 bg-paper/80 backdrop-blur-xl dark:border-line-dark/70 dark:bg-paper-dark/80"
 >
-  <div class="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
+  <div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-6 lg:px-10">
     {isHome ? (
       <a
         href="/"
@@ -33,7 +32,8 @@ function isActive(href: string) {
           HG
         </span>
         <span
-          class="wordmark-full absolute inset-y-0 left-0 text-[13px] font-semibold whitespace-nowrap tracking-tight text-ink opacity-0 transition-opacity duration-standard ease-standard dark:text-ink-dark"
+          class="wordmark-full absolute inset-y-0 left-0 text-[13px] font-semibold whitespace-nowrap text-ink opacity-0 transition-[opacity,letter-spacing] duration-standard ease-standard dark:text-ink-dark"
+          style="letter-spacing: 0.03em;"
           aria-hidden="true"
         >
           Hayden Garrick
@@ -57,7 +57,7 @@ function isActive(href: string) {
                 href={item.href}
                 aria-current={isActive(item.href) ? 'page' : undefined}
                 class:list={[
-                  'text-[13px] transition-colors duration-200',
+                  'link-underline text-[13px] transition-colors duration-standard',
                   isActive(item.href)
                     ? 'text-ink dark:text-ink-dark'
                     : 'text-subtle hover:text-ink dark:text-subtle-dark dark:hover:text-ink-dark',
@@ -153,6 +153,7 @@ function isActive(href: string) {
       wrap!.style.width = `${scrolled ? fullWidth : shortWidth}px`;
       shortEl!.style.opacity = scrolled ? '0' : '1';
       fullEl!.style.opacity = scrolled ? '1' : '0';
+      fullEl!.style.letterSpacing = scrolled ? '-0.025em' : '0.03em';
     }
 
     wrap.style.width = `${shortWidth}px`;

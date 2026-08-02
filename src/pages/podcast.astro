@@ -1,35 +1,88 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import SectionRow from '../components/SectionRow.astro';
 import PodcastEpisodeCard from '../components/PodcastEpisodeCard.astro';
-import Button from '../components/Button.astro';
-import { episodes, latestEpisode } from '../data/podcast';
+import PodcastPlatformPopover from '../components/PodcastPlatformPopover.astro';
+import SpotifyEmbedPlayer from '../components/SpotifyEmbedPlayer.astro';
+import { episodes, latestEpisode, getEpisodePlatforms, parseEpisodeDate } from '../data/podcast';
+import { projects } from '../data/projects';
+
+const [afterOfficeHours] = projects;
+
+const latestEpisodeDate = parseEpisodeDate(latestEpisode.date).toLocaleDateString('en-US', {
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
+});
+
+const latestEpisodePlatforms = getEpisodePlatforms(latestEpisode);
+const archiveEpisodes = episodes.slice(1);
+const availabilityNote = latestEpisodePlatforms
+  .slice(0, 3)
+  .map((platform) => platform.name)
+  .join(', ');
 ---
 
 <BaseLayout
   title="Podcast"
   description="After Office Hours — a podcast about technology, business, culture, and the ideas shaping what comes next. Hosted by Hayden Garrick."
 >
-  <section class="px-6 pt-20 pb-14 sm:pt-28 sm:pb-16 lg:px-10">
-    <div class="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:gap-16">
-      <p class="text-[13px] font-medium tracking-[0.06em] text-subtle uppercase dark:text-subtle-dark">Podcast</p>
-      <div class="max-w-2xl">
+  <section class="px-6 pt-20 pb-10 sm:pt-28 sm:pb-12 lg:px-10">
+    <div class="mx-auto max-w-7xl">
+      <div class="max-w-3xl">
         <h1 class="text-heading font-semibold text-ink dark:text-ink-dark">After Office Hours</h1>
-        <p class="mt-4 text-[1.0625rem] leading-relaxed text-subtle dark:text-subtle-dark">
-          A podcast about technology, business, culture, and the ideas shaping what comes next.
+        <p class="measure mt-5 text-[1.0625rem] leading-relaxed text-subtle dark:text-subtle-dark">
+          {afterOfficeHours.tagline}
         </p>
-        <div class="mt-6">
-          <Button href={latestEpisode.href} variant="link">Listen to the latest episode</Button>
-        </div>
       </div>
     </div>
   </section>
 
-  <section class="reveal border-t border-line px-6 py-16 sm:py-20 lg:px-10 dark:border-line-dark">
-    <div class="mx-auto max-w-6xl">
-      <h2 class="text-[13px] font-medium tracking-[0.06em] text-subtle uppercase dark:text-subtle-dark">Episodes</h2>
-      <div class="mt-6 max-w-3xl">
-        {episodes.map((episode) => <PodcastEpisodeCard episode={episode} />)}
+  <div class="mx-auto max-w-7xl px-6 lg:px-10">
+    <SectionRow id="latest-episode" class={archiveEpisodes.length === 0 ? 'pb-4' : ''}>
+      <p class="tabular-nums text-[12px] text-faint dark:text-subtle-dark">
+        Episode {latestEpisode.number} · {latestEpisodeDate} · {latestEpisode.duration}
+        {latestEpisode.guest && <> · with {latestEpisode.guest}</>}
+      </p>
+      <h2 class="text-subheading text-balance mt-2 font-semibold text-ink dark:text-ink-dark">
+        {latestEpisode.title}
+      </h2>
+      <p class="measure mt-4 text-[1.0625rem] leading-relaxed text-subtle dark:text-subtle-dark">
+        {latestEpisode.summary}
+      </p>
+      {
+        latestEpisode.spotifyEmbedUrl && (
+          <SpotifyEmbedPlayer
+            class="mt-6"
+            embedUrl={latestEpisode.spotifyEmbedUrl}
+            title={latestEpisode.title}
+            episodeNumber={latestEpisode.number}
+          />
+        )
+      }
+      <div class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2">
+        <PodcastPlatformPopover
+          platforms={latestEpisodePlatforms}
+          label="Listen elsewhere"
+          id="podcast-page-listen"
+        />
       </div>
-    </div>
-  </section>
+      {
+        availabilityNote && (
+          <p class="mt-4 text-[13px] text-faint dark:text-subtle-dark">Also on {availabilityNote}, and more.</p>
+        )
+      }
+    </SectionRow>
+
+    {
+      archiveEpisodes.length > 0 && (
+        <SectionRow id="episodes" class="pb-4">
+          <h2 class="text-[13px] font-medium tracking-[0.06em] text-subtle uppercase dark:text-subtle-dark">
+            Recent episodes
+          </h2>
+          <div class="mt-6">{archiveEpisodes.map((episode) => <PodcastEpisodeCard episode={episode} />)}</div>
+        </SectionRow>
+      )
+    }
+  </div>
 </BaseLayout>

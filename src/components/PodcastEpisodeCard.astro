@@ -1,6 +1,6 @@
 ---
 import Icon from './Icon.astro';
-import type { Episode } from '../data/podcast';
+import { parseEpisodeDate, type Episode } from '../data/podcast';
 
 interface Props {
   episode: Episode;
@@ -8,8 +8,8 @@ interface Props {
 
 const { episode } = Astro.props;
 
-const formattedDate = new Date(episode.date).toLocaleDateString('en-US', {
-  month: 'long',
+const formattedDate = parseEpisodeDate(episode.date).toLocaleDateString('en-US', {
+  month: 'short',
   day: 'numeric',
   year: 'numeric',
 });
@@ -17,29 +17,30 @@ const formattedDate = new Date(episode.date).toLocaleDateString('en-US', {
 
 <a
   href={episode.href}
-  class="group flex flex-col gap-4 border-b border-line py-8 first:pt-0 last:border-b-0 sm:flex-row sm:items-center sm:gap-8 dark:border-line-dark"
+  class="group -mx-3 flex flex-col gap-2 rounded-lg border-b border-line px-3 py-7 transition-colors first:pt-0 last:border-b-0 hover:bg-surface sm:flex-row sm:items-start sm:gap-8 dark:border-line-dark dark:hover:bg-surface-dark"
 >
-  <div
-    class="tabular-nums flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-line text-sm font-medium text-subtle transition-colors duration-fast group-hover:border-accent group-hover:text-accent dark:border-line-dark dark:text-subtle-dark"
-  >
-    {String(episode.number).padStart(2, '0')}
-  </div>
+  <p class="tabular-nums shrink-0 text-[13px] text-faint sm:w-24 sm:pt-0.5 dark:text-subtle-dark">{formattedDate}</p>
 
-  <div class="flex-1">
-    <p class="tabular-nums text-[13px] text-faint dark:text-subtle-dark">
-      {formattedDate} &middot; {episode.duration}{episode.guest && <> &middot; with {episode.guest}</>}
+  <div class="min-w-0 flex-1">
+    <p class="tabular-nums text-[12px] text-faint dark:text-subtle-dark">
+      Episode {episode.number} · {episode.duration}
+      {episode.guest && <> · with {episode.guest}</>}
     </p>
-    <h3 class="text-balance mt-1.5 text-[19px] leading-snug font-semibold text-ink transition-colors group-hover:text-accent dark:text-ink-dark dark:group-hover:text-accent-dark">
+    <h3 class="link-underline text-balance mt-1 inline-block text-[17px] font-medium text-ink transition-colors group-hover:text-accent dark:text-ink-dark dark:group-hover:text-accent-dark">
       {episode.title}
     </h3>
-    <p class="mt-2 max-w-2xl text-[15px] leading-relaxed text-subtle dark:text-subtle-dark">
+    <p class="measure mt-1 text-[14px] leading-relaxed text-subtle dark:text-subtle-dark">
       {episode.summary}
     </p>
   </div>
 
-  <div
-    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-line text-ink transition-colors duration-fast group-hover:border-accent group-hover:text-accent dark:border-line-dark dark:text-ink-dark"
+  <span
+    class="inline-flex shrink-0 items-center gap-1.5 border-b border-transparent pb-0.5 text-[13px] font-medium text-subtle transition-colors duration-fast group-hover:border-accent group-hover:text-accent sm:pt-0.5 dark:text-subtle-dark dark:group-hover:border-accent-dark dark:group-hover:text-accent-dark"
   >
-    <Icon name="play" class="h-3 w-3" />
-  </div>
+    Play
+    <Icon
+      name="play"
+      class="h-3 w-3 transition-transform duration-fast ease-standard group-hover:translate-x-0.5"
+    />
+  </span>
 </a>

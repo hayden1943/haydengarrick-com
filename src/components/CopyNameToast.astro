@@ -1,0 +1,163 @@
+---
+import Icon from './Icon.astro';
+import { socialLinks } from '../data/social';
+
+const linkedInUrl = socialLinks.find((link) => link.icon === 'linkedin')?.href;
+---
+
+{
+  linkedInUrl && (
+    <div
+      id="copy-name-toast"
+      class="pointer-events-none fixed inset-x-0 bottom-6 z-[70] flex justify-center px-6 sm:justify-end"
+      role="status"
+      aria-live="polite"
+      hidden
+    >
+      <div class="copy-toast-panel pointer-events-auto w-full max-w-xs rounded-lg border border-line bg-paper p-4 shadow-[0_10px_28px_-10px_rgba(0,0,0,0.18)] dark:border-line-dark dark:bg-surface-dark dark:shadow-[0_10px_28px_-10px_rgba(0,0,0,0.5)]">
+        <div class="flex items-start justify-between gap-3">
+          <p class="text-[14px] font-semibold text-ink dark:text-ink-dark">Nice.</p>
+          <button
+            type="button"
+            class="copy-toast-close -m-1.5 shrink-0 rounded-full p-1.5 text-faint transition-colors duration-fast hover:bg-surface hover:text-ink dark:text-subtle-dark dark:hover:bg-paper-dark dark:hover:text-ink-dark"
+            aria-label="Dismiss notification"
+          >
+            <Icon name="close" class="h-3 w-3" />
+          </button>
+        </div>
+        <p class="mt-1 text-[13px] leading-relaxed text-subtle dark:text-subtle-dark">
+          Let me save you a search.
+        </p>
+        <a
+          href={linkedInUrl}
+          target="_blank"
+          rel="noreferrer noopener"
+          class="copy-toast-link group mt-3 inline-flex items-center gap-1.5 text-[13px] font-medium text-accent transition-colors duration-fast hover:text-accent-hover dark:text-accent-dark"
+        >
+          Connect on LinkedIn
+          <Icon
+            name="arrow-right"
+            class="h-3 w-3 transition-transform duration-fast ease-standard group-hover:translate-x-1"
+          />
+        </a>
+      </div>
+    </div>
+  )
+}
+
+<style>
+  .copy-toast-panel {
+    opacity: 0;
+    transform: translateY(8px);
+    transition:
+      opacity 210ms var(--ease-standard),
+      transform 210ms var(--ease-standard);
+  }
+
+  #copy-name-toast.is-open .copy-toast-panel {
+    opacity: 1;
+    transform: translateY(0);
+  }
+</style>
+
+<script>
+  const AUTO_DISMISS_MS = 5000;
+  const CLOSE_TRANSITION_MS = 220;
+
+  // Module-scope: this script is bundled once and only re-executed via the
+  // astro:page-load listener below, so these persist across client-side
+  // navigations rather than being re-declared.
+  let dismissTimer: number | null = null;
+  let globalListenersAttached = false;
+
+  function getToast() {
+    return document.getElementById('copy-name-toast');
+  }
+
+  function clearTimer() {
+    if (dismissTimer !== null) {
+      window.clearTimeout(dismissTimer);
+      dismissTimer = null;
+    }
+  }
+
+  function openToast(toast: HTMLElement) {
+    toast.hidden = false;
+    // Force a reflow so the opacity/transform transition runs from its
+    // initial state instead of jumping straight to open (same technique
+    // as the podcast platform popover).
+    void toast.offsetHeight;
+    toast.classList.add('is-open');
+    clearTimer();
+    dismissTimer = window.setTimeout(() => closeToast(toast), AUTO_DISMISS_MS);
+  }
+
+  function closeToast(toast: HTMLElement) {
+    clearTimer();
+    toast.classList.remove('is-open');
+    window.setTimeout(() => {
+      if (!toast.classList.contains('is-open')) toast.hidden = true;
+    }, CLOSE_TRANSITION_MS);
+  }
+
+  function initCopyNameToast() {
+    const toast = getToast();
+    if (!toast || toast.dataset.copyToastInit) return;
+    toast.dataset.copyToastInit = 'true';
+
+    toast.querySelector('.copy-toast-close')?.addEventListener('click', () => closeToast(toast));
+    toast.querySelector('.copy-toast-link')?.addEventListener('click', () => closeToast(toast));
+
+    // Registered once, ever — the copy/keydown/before-swap listeners live on
+    // `document`, which persists across client-side navigations, so
+    // re-running this per page load (a fresh toast/hero node each time)
+    // would otherwise stack duplicate listeners. Each handler below looks
+    // up the current live toast/hero nodes itself rather than closing over
+    // ones from a previous page load.
+    if (globalListenersAttached) return;
+    globalListenersAttached = true;
+
+    // The native `copy` event fires on the currently focused element, which
+    // for a plain-text selection (no input focused) is `document` — not
+    // necessarily the DOM node visually containing the selection. So the
+    // listener sits on `document` and checks the selection itself, rather
+    // than relying on it bubbling up from the hero element.
+    document.addEventListener('copy', () => {
+      const heroEl = document.getElementById('hero-name');
+      const activeToast = getToast();
+      if (!heroEl || !activeToast) return;
+      const selection = document.getSelection();
+      if (!selection || selection.rangeCount === 0) return;
+      const range = selection.getRangeAt(0);
+      // Anchors on the selection's start rather than requiring the whole
+      // range to sit inside heroEl: a triple-click on the heading (a very
+      // common way to select a short line of text) has Chrome extend the
+      // range's end boundary into the next section's DOM even though the
+      // actual selected text stays exactly "Hayden Garrick" — checking
+      // commonAncestorContainer there falsely rejects it. Checking the
+      // start still correctly excludes article text, the nav wordmark, and
+      // everything else on the site, since none of it starts inside heroEl.
+      if (!heroEl.contains(range.startContainer)) return;
+      const selectedText = selection.toString().trim();
+      const fullName = heroEl.textContent?.trim() ?? '';
+      if (!fullName || selectedText !== fullName) return;
+      // Never touch event.clipboardData or call preventDefault — the
+      // visitor's clipboard should hold exactly what they selected.
+      openToast(activeToast);
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape') return;
+      const activeToast = getToast();
+      if (activeToast?.classList.contains('is-open')) closeToast(activeToast);
+    });
+
+    document.addEventListener('astro:before-swap', () => {
+      const activeToast = getToast();
+      if (activeToast) closeToast(activeToast);
+    });
+  }
+
+  initCopyNameToast();
+  document.addEventListener('astro:page-load', initCopyNameToast);
+</script>

@@ -11,16 +11,16 @@
   --color-paper: #faf9f6;
   --color-surface: #f2f0ea;
   --color-line: #ddd9d0;
-  --color-accent: #0a5cd8;
-  --color-accent-hover: #0b6bf5;
+  --color-accent: #2e6f40;
+  --color-accent-hover: #388a4f;
 
   --color-ink-dark: #ffffff;
   --color-subtle-dark: #a3a29c;
   --color-paper-dark: #000000;
   --color-surface-dark: #161614;
   --color-line-dark: #333230;
-  /* Lighter than --color-accent — #0a5cd8 falls short of 4.5:1 text contrast on pure black. */
-  --color-accent-dark: #4c8dff;
+  /* Lighter than --color-accent — #2e6f40 falls short of 4.5:1 text contrast on pure black. */
+  --color-accent-dark: #49ab65;
 
   --breakpoint-xs: 30rem;
 
@@ -31,12 +31,12 @@
   --duration-reveal: 480ms;
 
   --animate-fade-up: fade-up var(--duration-reveal) var(--ease-standard) both;
-  --animate-wordmark: wordmark-settle 700ms var(--ease-standard) both;
+  --animate-mask-reveal: mask-reveal 640ms var(--ease-standard) 80ms both;
 
   @keyframes fade-up {
     from {
       opacity: 0;
-      transform: translateY(0.65rem);
+      transform: translateY(0.5rem);
     }
     to {
       opacity: 1;
@@ -44,16 +44,12 @@
     }
   }
 
-  @keyframes wordmark-settle {
+  @keyframes mask-reveal {
     from {
-      opacity: 0;
-      letter-spacing: 0.04em;
-      filter: blur(2px);
+      transform: translateY(100%);
     }
     to {
-      opacity: 1;
-      letter-spacing: -0.03em;
-      filter: blur(0);
+      transform: translateY(0);
     }
   }
 
@@ -63,15 +59,6 @@
     }
     to {
       transform: scaleX(1);
-    }
-  }
-
-  @keyframes grid-in {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 0.05;
     }
   }
 }
@@ -85,6 +72,21 @@
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     scroll-behavior: smooth;
+  }
+
+  /* Astro's ClientRouter crossfades the whole page by default on every
+     navigation. Old/new pages are captured as flat screenshots at their own
+     scroll position — the ambient glow only exists in the first ~560px of the
+     document, so navigating away while scrolled down (old screenshot: glow
+     out of frame) to a fresh page load (new screenshot: glow in frame) reads
+     as the glow flashing into existence mid-transition. Disabling the root
+     crossfade makes navigation an instant swap instead — no animation left to
+     flash, and it fits the site's existing "no gimmicks" motion stance better
+     than a fade that keeps producing visible artifacts. */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -157,10 +159,12 @@
     transition-duration: var(--duration-reveal);
   }
 
-  /* Shared display scale — keeps headings consistent across the wordmark, sections, and rows. */
+  /* Shared display scale — keeps headings consistent across the wordmark, sections, and rows.
+     line-height is slightly looser than 1 so descenders (y, g) have room inside the hero's
+     overflow-hidden mask-reveal wrapper — at exactly 1 they get clipped by the mask. */
   .text-display {
     font-size: clamp(2.75rem, 11vw, 6.5rem);
-    line-height: 1;
+    line-height: 1.15;
     letter-spacing: -0.03em;
   }
 
@@ -176,6 +180,60 @@
     letter-spacing: -0.01em;
   }
 
+  /* Classic readable measure (~65 characters) for body copy — caps line length on
+     wide viewports without affecting narrow ones, since the cap only binds once the
+     container would otherwise exceed it. */
+  .measure {
+    max-width: 65ch;
+  }
+
+  /* Fluid editorial inset for the homepage's primary content column: matches the
+     site's standard edge padding (px-6 / lg:px-10) at small sizes, then eases the
+     column rightward on large desktop screens on top of that, capping the added
+     shift at 180px. A clamp() keeps this continuous rather than a fragile fixed
+     margin that would jump at a single breakpoint. Owns both left and right padding
+     outright (rather than stacking with px-6/lg:px-10) so the two can't collide in
+     the cascade and silently cancel each other out. */
+  .content-inset {
+    padding-left: calc(1.5rem + clamp(0px, (100vw - 64rem) * 0.28, 180px));
+    padding-right: 1.5rem;
+  }
+
+  @media (min-width: 64rem) {
+    .content-inset {
+      padding-left: calc(2.5rem + clamp(0px, (100vw - 64rem) * 0.28, 180px));
+      padding-right: 2.5rem;
+    }
+  }
+
+  /* Animated underline for text that otherwise only shifts color on hover — draws
+     in from the left on hover/focus, retracts on exit. Works two ways: applied
+     directly to a link (nav, footer), or nested inside a `.group`-hovered ancestor
+     (e.g. an ArticleRow title, where the whole row is the actual <a>). */
+  .link-underline {
+    position: relative;
+  }
+
+  .link-underline::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -0.2em;
+    width: 100%;
+    height: 1px;
+    background-color: currentColor;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--duration-standard) var(--ease-standard);
+  }
+
+  .link-underline:hover::after,
+  .link-underline:focus-visible::after,
+  .group:hover .link-underline::after,
+  .group:focus-visible .link-underline::after {
+    transform: scaleX(1);
+  }
+
   /* Scroll-reveal: fade + rise, used on section-level containers. */
   .reveal {
     opacity: 0;
@@ -183,6 +241,15 @@
 
   .reveal.is-visible {
     animation: var(--animate-fade-up);
+  }
+
+  /* Once the entrance animation finishes, BaseLayout's reveal script adds this —
+     drops the animation (and the `transform` it was holding via fill-mode: both)
+     so the element returns to a normal stacking context. See the comment on
+     `settleWhenDone` in BaseLayout.astro for why this matters. */
+  .reveal.reveal-settled {
+    opacity: 1;
+    animation: none;
   }
 
   /* Precision line reveal: a rule that draws left-to-right as it enters view. */
@@ -195,6 +262,11 @@
     animation: rule-draw var(--duration-reveal) var(--ease-standard) both;
   }
 
+  .rule-reveal.reveal-settled {
+    transform: none;
+    animation: none;
+  }
+
   /* Staggered text entrance: direct children fade up in a tight, controlled sequence. */
   .stagger > * {
     opacity: 0;
@@ -203,6 +275,12 @@
 
   .stagger.is-visible > * {
     animation: fade-up var(--duration-standard) var(--ease-standard) both;
+  }
+
+  .stagger.reveal-settled > * {
+    opacity: 1;
+    transform: none;
+    animation: none;
   }
 
   .stagger.is-visible > *:nth-child(1) {
@@ -221,34 +299,14 @@
     animation-delay: 320ms;
   }
 
-  /* Barely-visible structural grid behind the hero — resolves once on load, then stays static. */
-  .bg-grid {
-    background-image:
-      linear-gradient(to right, currentColor 1px, transparent 1px),
-      linear-gradient(to bottom, currentColor 1px, transparent 1px);
-    background-size: 64px 64px;
-    color: var(--color-ink);
-    opacity: 0;
-    animation: grid-in 1.4s var(--ease-standard) 200ms both;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    .bg-grid {
-      color: var(--color-ink-dark);
-    }
-  }
-
   @media (prefers-reduced-motion: reduce) {
     .reveal,
-    .stagger > * {
+    .stagger > *,
+    .mask-reveal {
       opacity: 1;
       animation: none;
       transform: none;
       filter: none;
-    }
-    .bg-grid {
-      opacity: 0.05;
-      animation: none;
     }
     .rule-reveal {
       transform: scaleX(1);

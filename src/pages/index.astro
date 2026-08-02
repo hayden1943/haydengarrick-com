@@ -7,15 +7,26 @@ import SectionRow from '../components/SectionRow.astro';
 import ArticleRow from '../components/ArticleRow.astro';
 import Connect from '../components/Connect.astro';
 import Button from '../components/Button.astro';
+import Icon from '../components/Icon.astro';
+import PodcastPlatformPopover from '../components/PodcastPlatformPopover.astro';
+import SpotifyEmbedPlayer from '../components/SpotifyEmbedPlayer.astro';
 import { projects } from '../data/projects';
-import { latestEpisode } from '../data/podcast';
-import { socialLinks } from '../data/social';
+import { latestEpisode, getEpisodePlatforms, parseEpisodeDate } from '../data/podcast';
+import { socialLinks, linkedInNewsletterUrl } from '../data/social';
+import { legacyBlog } from '../data/legacy';
 
 const [afterOfficeHours, carRoi] = projects;
 
 const articles = (await getCollection('writing'))
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
   .slice(0, 3);
+
+const latestEpisodeDate = parseEpisodeDate(latestEpisode.date).toLocaleDateString('en-US', {
+  month: 'short',
+  day: 'numeric',
+});
+
+const latestEpisodePlatforms = getEpisodePlatforms(latestEpisode);
 
 const personSchema = {
   '@context': 'https://schema.org',
@@ -31,32 +42,50 @@ const personSchema = {
 
   <Hero />
 
-  <div class="mx-auto max-w-6xl px-6 lg:px-10">
+  <div class="content-inset mx-auto max-w-7xl">
     <FeatureSection
       id="podcast"
-      eyebrow="Podcast"
       title={afterOfficeHours.name}
-      description="A podcast about technology, business, culture, and the ideas shaping what comes next."
-      href={afterOfficeHours.href}
-      ctaLabel="Explore episodes"
-      meta={`Episode ${latestEpisode.number}`}
-    />
+      description={afterOfficeHours.tagline}
+      meta={`Episode ${latestEpisode.number} · ${latestEpisodeDate}`}
+    >
+      {
+        latestEpisode.spotifyEmbedUrl && (
+          <SpotifyEmbedPlayer
+            slot="media"
+            class="mt-6"
+            embedUrl={latestEpisode.spotifyEmbedUrl}
+            title={latestEpisode.title}
+            episodeNumber={latestEpisode.number}
+          />
+        )
+      }
+      <PodcastPlatformPopover
+        slot="cta"
+        platforms={latestEpisodePlatforms}
+        id="home-listen"
+        label="Listen elsewhere"
+      />
+    </FeatureSection>
 
     <FeatureSection
       id="carroi"
-      eyebrow="Product"
       title={carRoi.name}
-      description="Data-driven valuation tools for enthusiast vehicles."
+      description={carRoi.tagline}
       href={carRoi.href}
-      ctaLabel="Join the waitlist"
+      ctaLabel="Join waitlist"
+      meta={carRoi.status}
     />
 
-    <SectionRow id="writing" eyebrow="Writing">
+    <SectionRow id="writing">
       <h2 class="text-subheading font-semibold text-ink dark:text-ink-dark">Any Chair</h2>
-      <p class="mt-3 text-[1.0625rem] leading-relaxed text-subtle dark:text-subtle-dark">
-        Notes on business, technology, and decision-making, published on LinkedIn.
+      <p class="measure mt-5 text-[1.0625rem] leading-relaxed text-subtle dark:text-subtle-dark">
+        Articles exploring business, technology, and the people behind them.
       </p>
       <div class="mt-6">
+        <Button href={linkedInNewsletterUrl} variant="outline" external>Subscribe on LinkedIn</Button>
+      </div>
+      <div class="mt-8">
         {
           articles.map((article) => (
             <ArticleRow title={article.data.title} summary={article.data.summary} date={article.data.date} href={article.data.href} />
@@ -68,7 +97,28 @@ const personSchema = {
       </div>
     </SectionRow>
 
-    <SectionRow id="connect" eyebrow="Connect" class="pb-4">
+    <SectionRow id="archive">
+      <h2 class="text-[15px] font-semibold text-ink dark:text-ink-dark">{legacyBlog.title}</h2>
+      <p class="measure mt-2 text-[14px] leading-relaxed text-subtle dark:text-subtle-dark">
+        {legacyBlog.description}
+      </p>
+      <div class="mt-4">
+        <a
+          href={legacyBlog.href}
+          target="_blank"
+          rel="noreferrer noopener"
+          class="link-underline group inline-flex items-center gap-1.5 text-[13px] font-medium text-subtle transition-colors duration-fast dark:text-subtle-dark dark:hover:text-ink-dark hover:text-ink"
+        >
+          {legacyBlog.ctaLabel}
+          <Icon
+            name="arrow-right"
+            class="h-3 w-3 transition-transform duration-fast ease-standard group-hover:translate-x-1"
+          />
+        </a>
+      </div>
+    </SectionRow>
+
+    <SectionRow id="connect" class="pb-4">
       <Connect />
     </SectionRow>
   </div>

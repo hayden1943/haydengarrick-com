@@ -52,6 +52,10 @@ const ogImageURL = new URL(image, Astro.site);
     <ClientRouter />
   </head>
   <body class="bg-paper text-ink antialiased dark:bg-paper-dark dark:text-ink-dark">
+    <div
+      class="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[560px] bg-[radial-gradient(ellipse_55%_50%_at_50%_-12%,rgba(46,111,64,0.22)_0%,rgba(46,111,64,0.09)_38%,transparent_72%)] dark:bg-[radial-gradient(ellipse_55%_50%_at_50%_-12%,rgba(73,171,101,0.24)_0%,rgba(73,171,101,0.10)_38%,transparent_72%)]"
+      aria-hidden="true"
+    ></div>
     <a
       href="#main"
       class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded-full focus:bg-ink focus:px-5 focus:py-2.5 focus:text-sm focus:font-medium focus:text-paper"
@@ -77,6 +81,29 @@ const ogImageURL = new URL(image, Astro.site);
           return;
         }
 
+        // `animation: ... both` keeps the entrance keyframe's end state (transform:
+        // translateY(0) / scaleX(1)) applied forever once the animation finishes —
+        // and *any* non-`none` transform, even a zero-value one, creates a new
+        // stacking context. That silently traps z-index for anything positioned
+        // inside a revealed section (e.g. a popover) below later sibling sections.
+        // Once each element's one-shot animation ends, drop the animation and its
+        // transform entirely so it settles back into a normal stacking context —
+        // visually identical, since the end state has no offset either way.
+        function settleWhenDone(el: HTMLElement) {
+          const total = el.classList.contains('stagger') ? el.children.length : 1;
+          let done = 0;
+          function onAnimationEnd(event: AnimationEvent) {
+            const target = event.target as HTMLElement;
+            if (target !== el && target.parentElement !== el) return;
+            done += 1;
+            if (done >= total) {
+              el.classList.add('reveal-settled');
+              el.removeEventListener('animationend', onAnimationEnd);
+            }
+          }
+          el.addEventListener('animationend', onAnimationEnd);
+        }
+
         const observer = new IntersectionObserver(
           (entries) => {
             for (const entry of entries) {
@@ -85,6 +112,7 @@ const ogImageURL = new URL(image, Astro.site);
                 const delay = el.dataset.revealDelay;
                 if (delay) el.style.animationDelay = delay;
                 el.classList.add('is-visible');
+                settleWhenDone(el);
                 observer.unobserve(el);
               }
             }

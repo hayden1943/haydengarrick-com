@@ -23,21 +23,24 @@ const formattedDate = date.toLocaleDateString('en-US', {
   href={href}
   target="_blank"
   rel="noreferrer noopener"
-  class="group flex flex-col gap-2 border-b border-line py-6 transition-colors first:pt-0 last:border-b-0 sm:flex-row sm:items-start sm:gap-8 dark:border-line-dark"
+  class="group -mx-3 flex flex-col gap-2 rounded-lg border-b border-line px-3 py-7 transition-colors first:pt-0 last:border-b-0 hover:bg-surface sm:flex-row sm:items-start sm:gap-8 dark:border-line-dark dark:hover:bg-surface-dark"
 >
   <p class="tabular-nums shrink-0 text-[13px] text-faint sm:w-24 sm:pt-0.5 dark:text-subtle-dark">{formattedDate}</p>
 
   <div class="min-w-0 flex-1">
-    <Heading class="text-[17px] font-medium text-ink transition-colors group-hover:text-accent dark:text-ink-dark dark:group-hover:text-accent-dark">
+    <Heading class="link-underline inline-block text-[17px] font-medium text-ink transition-colors group-hover:text-accent dark:text-ink-dark dark:group-hover:text-accent-dark">
       {title}
     </Heading>
-    <p class="mt-1 text-[14.5px] leading-relaxed text-subtle dark:text-subtle-dark">{summary}</p>
+    <p class="measure mt-1 text-[14px] leading-relaxed text-subtle dark:text-subtle-dark">{summary}</p>
   </div>
 
   <span
     class="inline-flex shrink-0 items-center gap-1.5 border-b border-transparent pb-0.5 text-[13px] font-medium text-subtle transition-colors duration-fast group-hover:border-accent group-hover:text-accent sm:pt-0.5 dark:text-subtle-dark dark:group-hover:border-accent-dark dark:group-hover:text-accent-dark"
   >
     Read on LinkedIn
-    <Icon name="external" class="h-3 w-3" />
+    <Icon
+      name="external"
+      class="h-3 w-3 transition-transform duration-fast ease-standard group-hover:translate-x-0.5"
+    />
   </span>
 </a>

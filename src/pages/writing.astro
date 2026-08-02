@@ -1,7 +1,10 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import SectionRow from '../components/SectionRow.astro';
 import ArticleRow from '../components/ArticleRow.astro';
+import Button from '../components/Button.astro';
+import { linkedInNewsletterUrl } from '../data/social';
 
 const articles = (await getCollection('writing')).sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 ---
@@ -11,24 +14,32 @@ const articles = (await getCollection('writing')).sort((a, b) => b.data.date.val
   description="Any Chair — essays on business, technology, and decision-making, published on LinkedIn."
 >
   <section class="px-6 pt-20 pb-10 sm:pt-28 sm:pb-12 lg:px-10">
-    <div class="mx-auto max-w-6xl">
-      <p class="text-[13px] font-medium tracking-[0.06em] text-subtle uppercase dark:text-subtle-dark">Writing</p>
-      <h1 class="text-heading mt-2 max-w-2xl font-semibold text-ink dark:text-ink-dark">Any Chair</h1>
-      <p class="mt-4 max-w-xl text-[1.0625rem] leading-relaxed text-subtle dark:text-subtle-dark">
-        Notes on business, technology, and decision-making, published on LinkedIn.
+    <div class="mx-auto max-w-7xl">
+      <h1 class="text-heading max-w-2xl font-semibold text-ink dark:text-ink-dark">Any Chair</h1>
+      <p class="measure mt-5 text-[1.0625rem] leading-relaxed text-subtle dark:text-subtle-dark">
+        Articles exploring business, technology, and the people behind them.
       </p>
-    </div>
-  </section>
-
-  <section class="border-t border-line px-6 py-12 sm:py-16 lg:px-10 dark:border-line-dark">
-    <div class="mx-auto max-w-6xl">
-      <div class="max-w-3xl">
-        {
-          articles.map((article) => (
-            <ArticleRow level="h2" title={article.data.title} summary={article.data.summary} date={article.data.date} href={article.data.href} />
-          ))
-        }
+      <div class="mt-6">
+        <Button href={linkedInNewsletterUrl} variant="link" external>Subscribe on LinkedIn</Button>
       </div>
     </div>
   </section>
+
+  <div class="mx-auto max-w-7xl px-6 lg:px-10">
+    <SectionRow id="articles" class="pb-4">
+      <div>
+        {
+          articles.map((article) => (
+            <ArticleRow
+              level="h2"
+              title={article.data.title}
+              summary={article.data.summary}
+              date={article.data.date}
+              href={article.data.href}
+            />
+          ))
+        }
+      </div>
+    </SectionRow>
+  </div>
 </BaseLayout>
