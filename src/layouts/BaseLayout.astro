@@ -1,0 +1,140 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  image?: string;
+}
+
+const {
+  title,
+  description = 'Hayden Garrick — After Office Hours, CarROI, and writing published on LinkedIn.',
+  image = '/images/og-default.png',
+} = Astro.props;
+
+const pageTitle = title === 'Hayden Garrick' ? title : `${title} — Hayden Garrick`;
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const ogImageURL = new URL(image, Astro.site);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="canonical" href={canonicalURL} />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImageURL} />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageURL} />
+
+    <ClientRouter />
+  </head>
+  <body class="bg-paper text-ink antialiased dark:bg-paper-dark dark:text-ink-dark">
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded-full focus:bg-ink focus:px-5 focus:py-2.5 focus:text-sm focus:font-medium focus:text-paper"
+    >
+      Skip to content
+    </a>
+    <Header />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+
+    <script>
+      function initReveal() {
+        const els = document.querySelectorAll<HTMLElement>(
+          '.reveal:not(.is-visible), .stagger:not(.is-visible)',
+        );
+        if (!els.length) return;
+
+        const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (prefersReduced) {
+          els.forEach((el) => el.classList.add('is-visible'));
+          return;
+        }
+
+        const observer = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (entry.isIntersecting) {
+                const el = entry.target as HTMLElement;
+                const delay = el.dataset.revealDelay;
+                if (delay) el.style.animationDelay = delay;
+                el.classList.add('is-visible');
+                observer.unobserve(el);
+              }
+            }
+          },
+          { threshold: 0.15, rootMargin: '0px 0px -8% 0px' },
+        );
+
+        els.forEach((el) => observer.observe(el));
+      }
+
+      // The view-transitions router manages scroll on navigation and can beat the
+      // browser's native hash-scroll on initial load — reassert it once the router settles.
+      function scrollToHash(behavior: ScrollBehavior = 'auto') {
+        if (!window.location.hash) return;
+        let target: Element | null;
+        try {
+          target = document.querySelector(window.location.hash);
+        } catch {
+          return;
+        }
+        if (!target) return;
+        target.scrollIntoView({ behavior, block: 'start' });
+      }
+
+      initReveal();
+      scrollToHash();
+      document.addEventListener('astro:page-load', () => {
+        initReveal();
+        scrollToHash();
+      });
+
+      // The view-transitions router intercepts same-page "#hash" link clicks as a
+      // transition and doesn't always complete the resulting scroll — handle it directly.
+      document.addEventListener('click', (event) => {
+        const link = (event.target as HTMLElement).closest('a[href^="#"]');
+        if (!(link instanceof HTMLAnchorElement)) return;
+        const hash = link.getAttribute('href') || '';
+        if (hash.length < 2) return;
+        let target: Element | null;
+        try {
+          target = document.querySelector(hash);
+        } catch {
+          return;
+        }
+        if (!target) return;
+
+        event.preventDefault();
+        history.pushState(null, '', hash);
+        target.scrollIntoView({ behavior: 'auto', block: 'start' });
+      });
+    </script>
+  </body>
+</html>

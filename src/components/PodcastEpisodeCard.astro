@@ -1,0 +1,45 @@
+---
+import Icon from './Icon.astro';
+import type { Episode } from '../data/podcast';
+
+interface Props {
+  episode: Episode;
+}
+
+const { episode } = Astro.props;
+
+const formattedDate = new Date(episode.date).toLocaleDateString('en-US', {
+  month: 'long',
+  day: 'numeric',
+  year: 'numeric',
+});
+---
+
+<a
+  href={episode.href}
+  class="group flex flex-col gap-4 border-b border-line py-8 first:pt-0 last:border-b-0 sm:flex-row sm:items-center sm:gap-8 dark:border-line-dark"
+>
+  <div
+    class="tabular-nums flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-line text-sm font-medium text-subtle transition-colors duration-fast group-hover:border-accent group-hover:text-accent dark:border-line-dark dark:text-subtle-dark"
+  >
+    {String(episode.number).padStart(2, '0')}
+  </div>
+
+  <div class="flex-1">
+    <p class="tabular-nums text-[13px] text-faint dark:text-subtle-dark">
+      {formattedDate} &middot; {episode.duration}{episode.guest && <> &middot; with {episode.guest}</>}
+    </p>
+    <h3 class="text-balance mt-1.5 text-[19px] leading-snug font-semibold text-ink transition-colors group-hover:text-accent dark:text-ink-dark dark:group-hover:text-accent-dark">
+      {episode.title}
+    </h3>
+    <p class="mt-2 max-w-2xl text-[15px] leading-relaxed text-subtle dark:text-subtle-dark">
+      {episode.summary}
+    </p>
+  </div>
+
+  <div
+    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-line text-ink transition-colors duration-fast group-hover:border-accent group-hover:text-accent dark:border-line-dark dark:text-ink-dark"
+  >
+    <Icon name="play" class="h-3 w-3" />
+  </div>
+</a>

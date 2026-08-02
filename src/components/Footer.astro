@@ -1,0 +1,43 @@
+---
+import SocialLinks from './SocialLinks.astro';
+
+const year = new Date().getFullYear();
+
+const links = [
+  { label: 'Podcast', href: '/podcast/' },
+  { label: 'Writing', href: '/writing/' },
+  { label: 'Projects', href: '/projects/' },
+  { label: 'Contact', href: '/#connect' },
+];
+---
+
+<footer class="border-t border-line dark:border-line-dark">
+  <div class="mx-auto max-w-6xl px-6 py-12">
+    <div class="flex flex-col items-start justify-between gap-8 sm:flex-row sm:items-center">
+      <p class="text-[13px] font-semibold text-ink dark:text-ink-dark">Hayden Garrick</p>
+      <SocialLinks iconClass="h-4 w-4" />
+    </div>
+
+    <div
+      class="mt-10 flex flex-col-reverse items-start justify-between gap-4 border-t border-line pt-6 sm:flex-row sm:items-center dark:border-line-dark"
+    >
+      <p class="text-xs text-faint dark:text-subtle-dark">&copy; {year} Hayden Garrick. All rights reserved.</p>
+      <nav aria-label="Footer">
+        <ul class="flex flex-wrap gap-x-6 gap-y-2">
+          {
+            links.map((link) => (
+              <li>
+                <a
+                  href={link.href}
+                  class="text-xs text-faint transition-colors hover:text-ink dark:text-subtle-dark dark:hover:text-ink-dark"
+                >
+                  {link.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+    </div>
+  </div>
+</footer>

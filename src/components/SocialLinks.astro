@@ -1,0 +1,29 @@
+---
+import Icon from './Icon.astro';
+import { socialLinks } from '../data/social';
+
+interface Props {
+  class?: string;
+  iconClass?: string;
+}
+
+const { class: className = '', iconClass = 'h-[18px] w-[18px]' } = Astro.props;
+---
+
+<ul class:list={['flex items-center gap-5', className]}>
+  {
+    socialLinks.map((link) => (
+      <li>
+        <a
+          href={link.href}
+          class="flex h-10 w-10 items-center justify-center rounded-full text-subtle transition-colors hover:bg-surface hover:text-ink dark:text-subtle-dark dark:hover:bg-surface-dark dark:hover:text-ink-dark"
+          target={link.icon === 'email' ? undefined : '_blank'}
+          rel={link.icon === 'email' ? undefined : 'noreferrer noopener'}
+          aria-label={link.icon === 'email' ? link.label : `${link.label} (opens in a new tab)`}
+        >
+          <Icon name={link.icon} class={iconClass} />
+        </a>
+      </li>
+    ))
+  }
+</ul>

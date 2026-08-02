@@ -1,0 +1,43 @@
+---
+import Icon from './Icon.astro';
+
+interface Props {
+  title: string;
+  summary: string;
+  date: Date;
+  href: string;
+  level?: 'h2' | 'h3';
+}
+
+const { title, summary, date, href, level = 'h3' } = Astro.props;
+const Heading = level;
+
+const formattedDate = date.toLocaleDateString('en-US', {
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
+});
+---
+
+<a
+  href={href}
+  target="_blank"
+  rel="noreferrer noopener"
+  class="group flex flex-col gap-2 border-b border-line py-6 transition-colors first:pt-0 last:border-b-0 sm:flex-row sm:items-start sm:gap-8 dark:border-line-dark"
+>
+  <p class="tabular-nums shrink-0 text-[13px] text-faint sm:w-24 sm:pt-0.5 dark:text-subtle-dark">{formattedDate}</p>
+
+  <div class="min-w-0 flex-1">
+    <Heading class="text-[17px] font-medium text-ink transition-colors group-hover:text-accent dark:text-ink-dark dark:group-hover:text-accent-dark">
+      {title}
+    </Heading>
+    <p class="mt-1 text-[14.5px] leading-relaxed text-subtle dark:text-subtle-dark">{summary}</p>
+  </div>
+
+  <span
+    class="inline-flex shrink-0 items-center gap-1.5 border-b border-transparent pb-0.5 text-[13px] font-medium text-subtle transition-colors duration-fast group-hover:border-accent group-hover:text-accent sm:pt-0.5 dark:text-subtle-dark dark:group-hover:border-accent-dark dark:group-hover:text-accent-dark"
+  >
+    Read on LinkedIn
+    <Icon name="external" class="h-3 w-3" />
+  </span>
+</a>

@@ -1,0 +1,20 @@
+---
+interface Props {
+  id?: string;
+  eyebrow: string;
+  class?: string;
+}
+
+const { id, eyebrow, class: className = '' } = Astro.props;
+---
+
+<div id={id} class:list={['scroll-mt-24', className]}>
+  <div class="rule-reveal reveal h-px bg-line dark:bg-line-dark"></div>
+
+  <div class="stagger reveal grid gap-6 py-10 sm:py-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:gap-16">
+    <p class="text-[13px] font-medium tracking-[0.06em] text-subtle uppercase dark:text-subtle-dark">{eyebrow}</p>
+    <div class="max-w-2xl">
+      <slot />
+    </div>
+  </div>
+</div>

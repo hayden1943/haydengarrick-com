@@ -1,0 +1,258 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Helvetica, Arial,
+    sans-serif;
+
+  --color-ink: #1a1a18;
+  --color-subtle: #62615c;
+  --color-faint: #8a8983;
+  --color-paper: #faf9f6;
+  --color-surface: #f2f0ea;
+  --color-line: #ddd9d0;
+  --color-accent: #0a5cd8;
+  --color-accent-hover: #0b6bf5;
+
+  --color-ink-dark: #ffffff;
+  --color-subtle-dark: #a3a29c;
+  --color-paper-dark: #000000;
+  --color-surface-dark: #161614;
+  --color-line-dark: #333230;
+  /* Lighter than --color-accent — #0a5cd8 falls short of 4.5:1 text contrast on pure black. */
+  --color-accent-dark: #4c8dff;
+
+  --breakpoint-xs: 30rem;
+
+  /* Motion tokens: fast interaction / standard transition / section reveal */
+  --ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast: 160ms;
+  --duration-standard: 260ms;
+  --duration-reveal: 480ms;
+
+  --animate-fade-up: fade-up var(--duration-reveal) var(--ease-standard) both;
+  --animate-wordmark: wordmark-settle 700ms var(--ease-standard) both;
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(0.65rem);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes wordmark-settle {
+    from {
+      opacity: 0;
+      letter-spacing: 0.04em;
+      filter: blur(2px);
+    }
+    to {
+      opacity: 1;
+      letter-spacing: -0.03em;
+      filter: blur(0);
+    }
+  }
+
+  @keyframes rule-draw {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  @keyframes grid-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 0.05;
+    }
+  }
+}
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-feature-settings: 'kern' 1, 'liga' 1;
+  }
+
+  ::selection {
+    background-color: var(--color-accent);
+    color: white;
+  }
+
+  a {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+    }
+    body {
+      background-color: var(--color-paper-dark);
+      color: var(--color-ink-dark);
+    }
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* transition-duration utilities — Tailwind's duration-* scale is numeric only,
+     so these named tokens (matching the --duration-* theme values) are defined explicitly. */
+  .duration-fast {
+    transition-duration: var(--duration-fast);
+  }
+
+  .duration-standard {
+    transition-duration: var(--duration-standard);
+  }
+
+  .duration-reveal {
+    transition-duration: var(--duration-reveal);
+  }
+
+  /* Shared display scale — keeps headings consistent across the wordmark, sections, and rows. */
+  .text-display {
+    font-size: clamp(2.75rem, 11vw, 6.5rem);
+    line-height: 1;
+    letter-spacing: -0.03em;
+  }
+
+  .text-heading {
+    font-size: clamp(1.875rem, 4vw, 2.75rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+
+  .text-subheading {
+    font-size: clamp(1.375rem, 2.6vw, 1.875rem);
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+  }
+
+  /* Scroll-reveal: fade + rise, used on section-level containers. */
+  .reveal {
+    opacity: 0;
+  }
+
+  .reveal.is-visible {
+    animation: var(--animate-fade-up);
+  }
+
+  /* Precision line reveal: a rule that draws left-to-right as it enters view. */
+  .rule-reveal {
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+
+  .rule-reveal.is-visible {
+    animation: rule-draw var(--duration-reveal) var(--ease-standard) both;
+  }
+
+  /* Staggered text entrance: direct children fade up in a tight, controlled sequence. */
+  .stagger > * {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+
+  .stagger.is-visible > * {
+    animation: fade-up var(--duration-standard) var(--ease-standard) both;
+  }
+
+  .stagger.is-visible > *:nth-child(1) {
+    animation-delay: 0ms;
+  }
+  .stagger.is-visible > *:nth-child(2) {
+    animation-delay: 80ms;
+  }
+  .stagger.is-visible > *:nth-child(3) {
+    animation-delay: 160ms;
+  }
+  .stagger.is-visible > *:nth-child(4) {
+    animation-delay: 240ms;
+  }
+  .stagger.is-visible > *:nth-child(5) {
+    animation-delay: 320ms;
+  }
+
+  /* Barely-visible structural grid behind the hero — resolves once on load, then stays static. */
+  .bg-grid {
+    background-image:
+      linear-gradient(to right, currentColor 1px, transparent 1px),
+      linear-gradient(to bottom, currentColor 1px, transparent 1px);
+    background-size: 64px 64px;
+    color: var(--color-ink);
+    opacity: 0;
+    animation: grid-in 1.4s var(--ease-standard) 200ms both;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .bg-grid {
+      color: var(--color-ink-dark);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal,
+    .stagger > * {
+      opacity: 1;
+      animation: none;
+      transform: none;
+      filter: none;
+    }
+    .bg-grid {
+      opacity: 0.05;
+      animation: none;
+    }
+    .rule-reveal {
+      transform: scaleX(1);
+      animation: none;
+    }
+  }
+}

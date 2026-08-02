@@ -1,0 +1,41 @@
+---
+import Icon from './Icon.astro';
+
+interface Props {
+  href: string;
+  variant?: 'filled' | 'outline' | 'link';
+  external?: boolean;
+  class?: string;
+}
+
+const { href, variant = 'filled', external = false, class: className = '' } = Astro.props;
+
+const base =
+  'group inline-flex items-center justify-center gap-1.5 text-[15px] font-medium transition-all duration-fast ease-standard active:scale-[0.98]';
+
+const variants = {
+  filled: 'h-11 rounded-sm bg-accent px-6 text-white hover:bg-accent-hover',
+  outline:
+    'h-11 rounded-sm border border-ink/25 px-6 text-ink hover:border-ink dark:border-ink-dark/25 dark:text-ink-dark dark:hover:border-ink-dark',
+  link: '-my-2.5 py-2.5 text-ink hover:text-accent dark:text-ink-dark dark:hover:text-accent-dark',
+};
+---
+
+<a
+  href={href}
+  class:list={[base, variants[variant], className]}
+  target={external ? '_blank' : undefined}
+  rel={external ? 'noreferrer noopener' : undefined}
+>
+  {variant === 'link' ? (
+    <span class="border-b border-ink/30 pb-0.5 transition-colors duration-fast group-hover:border-accent dark:border-ink-dark/30 dark:group-hover:border-accent-dark">
+      <slot />
+    </span>
+  ) : (
+    <slot />
+  )}
+  {variant === 'link' && (
+    <Icon name="arrow-right" class="h-3.5 w-3.5 transition-transform duration-fast ease-standard group-hover:translate-x-1" />
+  )}
+  {external && variant !== 'link' && <Icon name="external" class="h-3.5 w-3.5 opacity-70" />}
+</a>

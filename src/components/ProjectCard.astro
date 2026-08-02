@@ -1,0 +1,28 @@
+---
+import Icon from './Icon.astro';
+import type { Project } from '../data/projects';
+
+interface Props {
+  project: Project;
+}
+
+const { project } = Astro.props;
+const isExternal = project.href.startsWith('http');
+---
+
+<a
+  href={project.href}
+  target={isExternal ? '_blank' : undefined}
+  rel={isExternal ? 'noreferrer noopener' : undefined}
+  class="group flex flex-col gap-2 border-b border-line py-6 transition-colors first:pt-0 last:border-b-0 sm:flex-row sm:items-baseline sm:gap-8 dark:border-line-dark"
+>
+  <div class="min-w-0 flex-1">
+    <h3 class="flex items-center gap-2 text-[17px] font-medium text-ink transition-colors group-hover:text-accent dark:text-ink-dark dark:group-hover:text-accent-dark">
+      <span>{project.name}</span>
+      {isExternal && <Icon name="external" class="h-3 w-3 text-faint" />}
+    </h3>
+    <p class="mt-1 text-[14.5px] leading-relaxed text-subtle dark:text-subtle-dark">{project.tagline}</p>
+  </div>
+
+  <p class="shrink-0 text-[13px] text-faint sm:pt-0.5 dark:text-subtle-dark">{project.tags.join(' · ')}</p>
+</a>

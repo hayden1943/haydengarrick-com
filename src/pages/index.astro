@@ -1,0 +1,72 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/Hero.astro';
+import FeatureSection from '../components/FeatureSection.astro';
+import SectionRow from '../components/SectionRow.astro';
+import ArticleRow from '../components/ArticleRow.astro';
+import Connect from '../components/Connect.astro';
+import Button from '../components/Button.astro';
+import { projects } from '../data/projects';
+import { latestEpisode } from '../data/podcast';
+import { socialLinks } from '../data/social';
+
+const [afterOfficeHours, carRoi] = projects;
+
+const articles = (await getCollection('writing'))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 3);
+
+const personSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: 'Hayden Garrick',
+  url: Astro.site?.toString(),
+  sameAs: socialLinks.filter((link) => link.icon !== 'email').map((link) => link.href),
+};
+---
+
+<BaseLayout title="Hayden Garrick">
+  <script type="application/ld+json" is:inline set:html={JSON.stringify(personSchema)} />
+
+  <Hero />
+
+  <div class="mx-auto max-w-6xl px-6 lg:px-10">
+    <FeatureSection
+      id="podcast"
+      eyebrow="Podcast"
+      title={afterOfficeHours.name}
+      description="A podcast about technology, business, culture, and the ideas shaping what comes next."
+      href={afterOfficeHours.href}
+      ctaLabel="Explore episodes"
+      meta={`Episode ${latestEpisode.number}`}
+    />
+
+    <FeatureSection
+      id="carroi"
+      eyebrow="Product"
+      title={carRoi.name}
+      description="Data-driven valuation tools for enthusiast vehicles."
+      href={carRoi.href}
+      ctaLabel="Join the waitlist"
+    />
+
+    <SectionRow id="writing" eyebrow="Writing">
+      <h2 class="text-subheading font-semibold text-ink dark:text-ink-dark">Selected Writing</h2>
+      <div class="mt-6">
+        {
+          articles.map((article) => (
+            <ArticleRow title={article.data.title} summary={article.data.summary} date={article.data.date} href={article.data.href} />
+          ))
+        }
+      </div>
+      <div class="mt-6">
+        <Button href="/writing/" variant="link">Read all writing</Button>
+      </div>
+    </SectionRow>
+
+    <SectionRow id="connect" eyebrow="Connect" class="pb-4">
+      <Connect />
+    </SectionRow>
+  </div>
+</BaseLayout>

@@ -1,0 +1,35 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PodcastEpisodeCard from '../components/PodcastEpisodeCard.astro';
+import Button from '../components/Button.astro';
+import { episodes, latestEpisode } from '../data/podcast';
+---
+
+<BaseLayout
+  title="Podcast"
+  description="After Office Hours — a podcast about technology, business, culture, and the ideas shaping what comes next. Hosted by Hayden Garrick."
+>
+  <section class="px-6 pt-20 pb-14 sm:pt-28 sm:pb-16 lg:px-10">
+    <div class="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:gap-16">
+      <p class="text-[13px] font-medium tracking-[0.06em] text-subtle uppercase dark:text-subtle-dark">Podcast</p>
+      <div class="max-w-2xl">
+        <h1 class="text-heading font-semibold text-ink dark:text-ink-dark">After Office Hours</h1>
+        <p class="mt-4 text-[1.0625rem] leading-relaxed text-subtle dark:text-subtle-dark">
+          A podcast about technology, business, culture, and the ideas shaping what comes next.
+        </p>
+        <div class="mt-6">
+          <Button href={latestEpisode.href} variant="link">Listen to the latest episode</Button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="reveal border-t border-line px-6 py-16 sm:py-20 lg:px-10 dark:border-line-dark">
+    <div class="mx-auto max-w-6xl">
+      <h2 class="text-[13px] font-medium tracking-[0.06em] text-subtle uppercase dark:text-subtle-dark">Episodes</h2>
+      <div class="mt-6 max-w-3xl">
+        {episodes.map((episode) => <PodcastEpisodeCard episode={episode} />)}
+      </div>
+    </div>
+  </section>
+</BaseLayout>
