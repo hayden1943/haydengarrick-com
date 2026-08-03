@@ -18,10 +18,31 @@ export interface Episode {
   pocketCastsUrl?: string;
 }
 
-// Only real, confirmed episodes belong here — no placeholder entries. Two more
-// episodes are expected soon; add them (following the same shape as episode 1)
-// once their real links and details are available.
+// Only real, confirmed episodes belong here — no placeholder entries. One more
+// episode is expected soon; add it (following the same shape below) once its
+// real links and details are available.
 export const episodes: Episode[] = [
+  {
+    slug: '2-steve-jobs-exile-years-toy-story',
+    number: 2,
+    title: 'Where Would Apple Be Without Toy Story? Steve Jobs’ Exile Years',
+    summary:
+      'Tracing Steve Jobs’ decade in exile from Apple — founding NeXT, acquiring Lucasfilm’s graphics group to create Pixar, and the long road through RenderMan to 1995’s Toy Story — this episode looks at how those wilderness years built the leader who’d return to remake Apple.',
+    // Date confirmed from the Spotify embed widget itself ("Aug 2"); year
+    // inferred since it's rendering as very recent relative to today.
+    date: '2026-08-02',
+    duration: '45 min',
+    href: 'https://open.spotify.com/episode/5I4tWkko4U8thlJUzp9Ysh?si=317ca93221d04976',
+    spotifyEmbedUrl: 'https://open.spotify.com/embed/episode/5I4tWkko4U8thlJUzp9Ysh',
+    // Show-level links (verified non-episode-specific — same show ID/page for
+    // every episode), reused from episode 1. Pocket Casts intentionally
+    // omitted: its share links are per-episode and none has been provided yet
+    // for this one — do not reuse episode 1's, it points to different content.
+    appleUrl: 'https://podcasts.apple.com/us/podcast/after-office-hours/id6792886537',
+    spotifyUrl: 'https://open.spotify.com/show/033SW62kOdxaLSb4TaUtSu?si=05d13c1a7f7546cb',
+    youtubeUrl: 'https://www.youtube.com/@afterofficehourspc',
+    amazonMusicUrl: 'https://music.amazon.com/podcasts/fbc4ea2b-07e7-462e-993b-610d219af2b5/after-office-hours',
+  },
   {
     slug: '1-toy-story-5-data-collection',
     number: 1,
