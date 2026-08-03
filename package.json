@@ -7,19 +7,25 @@
   },
   "scripts": {
     "dev": "astro dev",
+    "prebuild": "npm run generate:og",
     "build": "astro check && astro build",
     "preview": "astro preview",
     "check": "astro check",
-    "astro": "astro"
+    "astro": "astro",
+    "generate:og": "tsx scripts/generate-og-images.ts"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3",
+    "@fontsource/inter": "^5.3.0",
+    "@resvg/resvg-js": "^2.6.2",
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.1.6",
+    "satori": "^0.29.0",
     "tailwindcss": "^4.3.3"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
+    "tsx": "^4.23.5",
     "typescript": "^6.0.3"
   }
 }

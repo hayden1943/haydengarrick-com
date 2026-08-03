@@ -2,23 +2,37 @@
 import { ClientRouter } from 'astro:transitions';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import { ogContent, ogImagePath } from '../lib/og/content';
 import '../styles/global.css';
 
 interface Props {
   title?: string;
   description?: string;
   image?: string;
+  /** Alt text for the OG/Twitter image. Defaults to the page title — pass a
+   *  concrete description (see src/lib/og/content.ts) for pages with a
+   *  generated card. */
+  imageAlt?: string;
   canonicalURL?: string;
+  /** og:type. 'article' additionally renders published/modified time tags. */
+  type?: 'website' | 'article';
+  publishedTime?: Date | string;
+  modifiedTime?: Date | string;
 }
 
 const {
   title = 'Hayden Garrick',
   description = 'Hayden Garrick — After Office Hours, CarROI, and Any Chair.',
-  image = '/og-image.png',
+  image = ogImagePath('home'),
+  imageAlt: imageAltProp,
   canonicalURL: canonicalURLProp,
+  type = 'website',
+  publishedTime,
+  modifiedTime,
 } = Astro.props;
 
 const pageTitle = title === 'Hayden Garrick' ? title : `${title} — Hayden Garrick`;
+const imageAlt = imageAltProp ?? ogContent.home.alt;
 const canonicalURL = new URL(canonicalURLProp ?? Astro.url.pathname, Astro.site);
 const ogImageURL = new URL(image, Astro.site);
 ---
@@ -39,7 +53,7 @@ const ogImageURL = new URL(image, Astro.site);
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
 
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={type} />
     <meta property="og:site_name" content="Hayden Garrick" />
     <meta property="og:url" content={canonicalURL} />
     <meta property="og:title" content={pageTitle} />
@@ -47,13 +61,19 @@ const ogImageURL = new URL(image, Astro.site);
     <meta property="og:image" content={ogImageURL} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content={pageTitle} />
+    <meta property="og:image:alt" content={imageAlt} />
+    {type === 'article' && publishedTime && (
+      <meta property="article:published_time" content={new Date(publishedTime).toISOString()} />
+    )}
+    {type === 'article' && modifiedTime && (
+      <meta property="article:modified_time" content={new Date(modifiedTime).toISOString()} />
+    )}
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={pageTitle} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImageURL} />
-    <meta name="twitter:image:alt" content={pageTitle} />
+    <meta name="twitter:image:alt" content={imageAlt} />
 
     <ClientRouter />
   </head>

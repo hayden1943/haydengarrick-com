@@ -5,6 +5,7 @@ import SectionRow from '../components/SectionRow.astro';
 import ArticleRow from '../components/ArticleRow.astro';
 import Button from '../components/Button.astro';
 import { linkedInNewsletterUrl } from '../data/social';
+import { ogContent, ogImagePath } from '../lib/og/content';
 
 const articles = (await getCollection('writing')).sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 ---
@@ -12,6 +13,8 @@ const articles = (await getCollection('writing')).sort((a, b) => b.data.date.val
 <BaseLayout
   title="Writing"
   description="Any Chair — essays on business, technology, and decision-making, published on LinkedIn."
+  image={ogImagePath('writing')}
+  imageAlt={ogContent.writing.alt}
 >
   <section class="px-6 pt-20 pb-10 sm:pt-28 sm:pb-12 lg:px-10">
     <div class="mx-auto max-w-7xl">

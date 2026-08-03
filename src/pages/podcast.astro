@@ -6,6 +6,7 @@ import PodcastPlatformPopover from '../components/PodcastPlatformPopover.astro';
 import SpotifyEmbedPlayer from '../components/SpotifyEmbedPlayer.astro';
 import { episodes, latestEpisode, getEpisodePlatforms, parseEpisodeDate } from '../data/podcast';
 import { projects } from '../data/projects';
+import { ogContent, ogImagePath } from '../lib/og/content';
 
 const [afterOfficeHours] = projects;
 
@@ -26,6 +27,8 @@ const availabilityNote = latestEpisodePlatforms
 <BaseLayout
   title="Podcast"
   description="After Office Hours — a podcast about technology, business, culture, and the ideas shaping what comes next. Hosted by Hayden Garrick."
+  image={ogImagePath('podcast')}
+  imageAlt={ogContent.podcast.alt}
 >
   <section class="px-6 pt-20 pb-10 sm:pt-28 sm:pb-12 lg:px-10">
     <div class="mx-auto max-w-7xl">
