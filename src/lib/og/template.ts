@@ -1,4 +1,4 @@
-import type { OgCardContent } from './types';
+import type { DescriptionSegment, OgCardContent } from './types';
 
 // A minimal stand-in for a React element — satori only cares about this
 // exact `{ type, props }` shape at runtime, so building the tree by hand
@@ -27,6 +27,10 @@ const COLOR = {
   faint: '#8a8983',
   line: '#ddd9d0',
   accent: '#2e6f40',
+  // Sits between `subtle` and `faint` — the footer URL wants slightly more
+  // contrast than the site's default "faint" tone without competing with
+  // the subtitle above it.
+  footer: '#7e7d77',
 } as const;
 
 export const OG_CANVAS = { width: 1200, height: 630 } as const;
@@ -48,7 +52,46 @@ function pickTitleFontSize(title: string): number {
 }
 
 function pickDescriptionFontSize(description: string): number {
-  return description.length > 100 ? 25 : 28;
+  return description.length > 100 ? 28 : 32;
+}
+
+// Inline styling for a single mixed-emphasis subtitle token — bold/higher-
+// contrast for the primary names, small/light/low-contrast for the quiet
+// "(Podcast)"-style descriptors and the "·" separators between groups.
+const SEGMENT_STYLE: Record<DescriptionSegment['emphasis'], Record<string, unknown>> = {
+  primary: { fontSize: 32, fontWeight: 600, color: COLOR.subtle },
+  secondary: { fontSize: 22, fontWeight: 400, color: COLOR.faint },
+  separator: { fontSize: 26, fontWeight: 400, color: COLOR.faint },
+};
+
+const SEGMENT_GAP: Record<DescriptionSegment['emphasis'], number> = {
+  primary: 14,
+  secondary: 8,
+  separator: 14,
+};
+
+function buildSegmentedDescription(segments: DescriptionSegment[]): SatoriNode {
+  return el(
+    'div',
+    {
+      display: 'flex',
+      flexDirection: 'row',
+      flexWrap: 'nowrap',
+      alignItems: 'baseline',
+    },
+    segments.map((segment, index) =>
+      el(
+        'div',
+        {
+          display: 'flex',
+          whiteSpace: 'nowrap',
+          marginLeft: index === 0 ? 0 : SEGMENT_GAP[segment.emphasis],
+          ...SEGMENT_STYLE[segment.emphasis],
+        },
+        segment.text,
+      ),
+    ),
+  );
 }
 
 export function buildOgNode(content: OgCardContent): SatoriNode {
@@ -72,7 +115,7 @@ export function buildOgNode(content: OgCardContent): SatoriNode {
     );
   }
 
-  const hasSecondaryContent = Boolean(content.description || content.meta);
+  const hasSecondaryContent = Boolean(content.description || content.descriptionSegments || content.meta);
 
   children.push(
     el(
@@ -110,7 +153,9 @@ export function buildOgNode(content: OgCardContent): SatoriNode {
     );
   }
 
-  if (content.description) {
+  if (content.descriptionSegments) {
+    children.push(buildSegmentedDescription(content.descriptionSegments));
+  } else if (content.description) {
     children.push(
       el(
         'div',
@@ -154,21 +199,24 @@ export function buildOgNode(content: OgCardContent): SatoriNode {
       flexGrow: 1,
       justifyContent: 'center',
       position: 'relative',
+      // Nudges the vertically-centered block up off dead-center for better
+      // balance against the footer row below it.
+      transform: 'translateY(-35px)',
     },
     children,
   );
 
   // Reproduces the site's own hero glow (see BaseLayout.astro) at card scale
-  // — a soft radial wash, not a hard-edged blob, kept subtle enough not to
-  // reduce text legibility at small preview sizes.
+  // — broad and diffuse across the upper third rather than a tight spotlight,
+  // via a wide low-opacity ellipse with gradual falloff stops.
   const glow = el('div', {
     position: 'absolute',
     top: 0,
     left: 0,
     width: OG_CANVAS.width,
-    height: 420,
+    height: 480,
     backgroundImage:
-      'radial-gradient(ellipse at 50% 0%, rgba(46,111,64,0.22) 0%, rgba(46,111,64,0.09) 40%, rgba(250,249,246,0) 72%)',
+      'radial-gradient(ellipse 1100px 520px at 50% -8%, rgba(46,111,64,0.17) 0%, rgba(46,111,64,0.09) 38%, rgba(46,111,64,0.04) 62%, rgba(250,249,246,0) 88%)',
   });
 
   const footerRow = el(
@@ -186,7 +234,7 @@ export function buildOgNode(content: OgCardContent): SatoriNode {
         {
           display: 'flex',
           fontSize: 24,
-          color: COLOR.faint,
+          color: COLOR.footer,
           letterSpacing: 0.4,
         },
         content.footer,
@@ -195,21 +243,24 @@ export function buildOgNode(content: OgCardContent): SatoriNode {
         'div',
         {
           display: 'flex',
-          width: 44,
-          height: 44,
-          borderRadius: 10,
+          width: 36,
+          height: 36,
+          borderRadius: 8,
           backgroundColor: COLOR.accent,
           alignItems: 'center',
           justifyContent: 'center',
+          // Small, deliberate nudge toward the corner — stays inside the
+          // overall safe margin (only the badge shifts; text stays put).
+          margin: '0 -6px -4px 0',
         },
         el(
           'div',
           {
             display: 'flex',
-            fontSize: 17,
+            fontSize: 14,
             fontWeight: 800,
             color: '#ffffff',
-            letterSpacing: -0.5,
+            letterSpacing: -0.3,
           },
           'HG',
         ),

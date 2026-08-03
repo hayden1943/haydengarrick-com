@@ -11,16 +11,23 @@ const latestEpisodeDate = parseEpisodeDate(latestEpisode.date).toLocaleDateStrin
   year: 'numeric',
 });
 
+// Bump whenever template.ts's visual output changes (colors, spacing, sizing,
+// glow, etc.) — folded into every card's version hash below so a purely
+// stylistic template edit still busts cached previews on every card, even
+// ones whose own text content didn't change.
+const TEMPLATE_VERSION = 2;
+
 export interface VersionedOgCardContent extends OgCardContent {
-  /** Short hash of the card's own text — changes only when the copy changes,
-   *  so it can be appended to the image URL as a stable cache-busting query
-   *  param (`?v=...`) without producing a new value on every unrelated build. */
+  /** Short hash of the card's own text plus TEMPLATE_VERSION — changes
+   *  whenever the copy or the shared template changes, so it can be
+   *  appended to the image URL as a stable cache-busting query param
+   *  (`?v=...`) without producing a new value on every unrelated build. */
   version: string;
 }
 
 function withVersion(content: OgCardContent): VersionedOgCardContent {
   const version = createHash('sha256')
-    .update(JSON.stringify(content))
+    .update(JSON.stringify({ content, templateVersion: TEMPLATE_VERSION }))
     .digest('hex')
     .slice(0, 8);
   return { ...content, version };
@@ -35,7 +42,16 @@ export const ogContent = {
     id: 'home',
     outputFile: 'home.png',
     title: 'Hayden Garrick',
-    description: 'After Office Hours · Any Chair · CarROI',
+    descriptionSegments: [
+      { text: 'After Office Hours', emphasis: 'primary' },
+      { text: '(Podcast)', emphasis: 'secondary' },
+      { text: '·', emphasis: 'separator' },
+      { text: 'Any Chair', emphasis: 'primary' },
+      { text: '(Writing)', emphasis: 'secondary' },
+      { text: '·', emphasis: 'separator' },
+      { text: 'CarROI', emphasis: 'primary' },
+      { text: '(App)', emphasis: 'secondary' },
+    ],
     footer: 'haydengarrick.com',
     alt: 'Hayden Garrick — After Office Hours, Any Chair, and CarROI.',
   }),
